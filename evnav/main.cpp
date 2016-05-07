@@ -1,0 +1,55 @@
+#include <QDebug>
+#include <QCoreApplication>
+#include <QCommandLineParser>
+
+#include <iostream>
+
+#include <functional>
+#include "evnav.h"
+#include "chargerprovider.h"
+
+int main(int argc, char *argv[])
+{
+    QCoreApplication app(argc, argv);
+    QCoreApplication::setApplicationName("evnav");
+    QCoreApplication::setApplicationVersion("0.1");
+
+    QCommandLineParser parser;
+    parser.setApplicationDescription("electric vehicule trip planner");
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.addPositionalArgument("osrm", "path to osrm file");
+    parser.addPositionalArgument("charger", "path to json charger file");
+
+    QCommandLineOption srcOption("src", "source lon,lat", "src");
+    parser.addOption(srcOption);
+
+    QCommandLineOption dstOption("dst", "destination lon,lat", "dst");
+    parser.addOption(dstOption);
+
+    parser.process(app);
+    const QStringList args = parser.positionalArguments();
+    if (!(parser.isSet(srcOption) && parser.isSet(dstOption))) {
+        std::cout << qPrintable(parser.helpText());
+        qFatal("error: requires src and dst");
+    }
+
+    Evnav evnav(args.at(0));
+
+    ChargerProvider provider;
+    provider.loadJson(args.at(1));
+
+    ChargerProvider dcfc = provider.filter(provider.fastChargerFilter());
+
+    qDebug() << "chargers loaded:" << provider.size();
+    qDebug() << "fast chargers:" << dcfc.size();
+
+    for (Charger &charger: dcfc.chargers()) {
+        qDebug() << charger.id() << charger.name();
+    }
+
+    evnav.setChargerProvider(dcfc);
+
+    return 0;
+}
+
