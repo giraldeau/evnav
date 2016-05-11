@@ -1,5 +1,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
+    graph \
     example \
-    evnav
+    evnav \
+    tests

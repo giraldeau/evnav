@@ -38,7 +38,7 @@ public:
     Charger();
     QString name() { return m_name; }
     int id() { return m_id; }
-    Coordinate loc() { return m_loc; }
+    osrm::Coordinate loc() { return m_loc; }
     int network_id() { return m_network_id; }
     int level() { return m_level; }
     void read(const QJsonObject &json);
@@ -46,7 +46,7 @@ public:
 private:
     int m_id;
     QString m_name;
-    Coordinate m_loc;
+    osrm::Coordinate m_loc;
     int m_level;
     int m_network_id;
     static QAtomicInt m_count;

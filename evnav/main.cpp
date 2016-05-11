@@ -8,6 +8,9 @@
 #include "evnav.h"
 #include "chargerprovider.h"
 
+
+#include <osrm/coordinate.hpp>
+
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
@@ -27,6 +30,9 @@ int main(int argc, char *argv[])
     QCommandLineOption dstOption("dst", "destination lon,lat", "dst");
     parser.addOption(dstOption);
 
+    QCommandLineOption verboseOption("verbose", "verbose output");
+    parser.addOption(verboseOption);
+
     parser.process(app);
     const QStringList args = parser.positionalArguments();
     if (!(parser.isSet(srcOption) && parser.isSet(dstOption))) {
@@ -44,11 +50,18 @@ int main(int argc, char *argv[])
     qDebug() << "chargers loaded:" << provider.size();
     qDebug() << "fast chargers:" << dcfc.size();
 
-    for (Charger &charger: dcfc.chargers()) {
-        qDebug() << charger.id() << charger.name();
+    if (parser.isSet(verboseOption)) {
+        for (Charger &charger: dcfc.chargers()) {
+            qDebug() << charger.id() << charger.name();
+        }
     }
 
     evnav.setChargerProvider(dcfc);
+
+    Coordinate src = evnav.stringToCoordinates(parser.value(srcOption));
+    Coordinate dst = evnav.stringToCoordinates(parser.value(dstOption));
+
+    evnav.route(src, dst);
 
     return 0;
 }
