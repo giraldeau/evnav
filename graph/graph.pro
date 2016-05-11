@@ -4,7 +4,8 @@
 #
 #-------------------------------------------------
 
-QT       -= core gui
+QT       += core
+QT -= gui
 
 TARGET = graph
 TEMPLATE = lib
