@@ -1,6 +1,7 @@
 #include <QElapsedTimer>
 #include "evnav.h"
 #include "graph.h"
+#include "shortestpath.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -205,16 +206,14 @@ void Evnav::route(Coordinate &src, Coordinate &dst)
         }
         double e = computeEnergy(t, eff);
         if (e < (batt * SOC_dyn)) {
-            //double charge_time = computeChargingTime(e, power);
-            double total_time = computeTripTimeWithCharging(trip, e, power);
+            double charge_time = computeChargingTime(e, power);
+            double total_time = computeTripTimeWithCharging(t, e, power);
             Edge edge{a.id(), b.id(), total_time};
-            qDebug() << a.name() << " -> " << b.name();
-                        /*
+            qDebug() << a.name() << " -> " << b.name()
                      << "distance:" << (t.dist_m / 1000.0)
                      << "travel time:" << (t.time_s / 3600.0)
                      << "charge time:" << (charge_time / 3600.0)
                      << "total time :" << (total_time / 3600.0);
-                    */
             g.addEdge(edge);
         }
     });
@@ -233,10 +232,26 @@ void Evnav::route(Coordinate &src, Coordinate &dst)
     }
 
     qDebug() << "graph size:" << g.E();
-
     // TODO: write the graph as Json
+    // TODO: write the path as Json
 
-    // compute the shortest path
-    // compute detail of the trip
+    ShortestPath sp(g, srcId);
+    if (sp.hasPathTo(dstId)) {
+        QVector<Edge> path = sp.pathTo(dstId).toVector();
+        if (path.isEmpty()) {
+            qDebug() << "error: found path, but path is empty";
+            return;
+        }
+        qDebug() << "Awesome: charging path found!";
+        qDebug() << "total time, including charging:" << sp.distTo(dstId) / 3600;
+        for (int i = 0; i < path.size() - 1; i++) {
+            Edge &e = path[i];
+            qDebug() << "go to:" << m_provider.charger(e.to()).name() << (e.weight() / 3600);
+        }
+        qDebug() << "go to destination" << (path.last().weight() / 3600);
+
+    } else {
+        qDebug() << "cannot reach destination with this electric car";
+    }
 
 }

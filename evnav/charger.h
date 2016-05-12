@@ -10,6 +10,8 @@
 #include <QJsonArray>
 #include <osrm/coordinate.hpp>
 
+#include "edge.h"
+
 /*
 {
   "AvailableCount": null,
@@ -37,14 +39,14 @@ class Charger
 public:
     Charger();
     QString name() { return m_name; }
-    int id() { return m_id; }
+    VertexId id() { return m_id; }
     osrm::Coordinate loc() { return m_loc; }
     int network_id() { return m_network_id; }
     int level() { return m_level; }
     void read(const QJsonObject &json);
 
 private:
-    int m_id;
+    VertexId m_id;
     QString m_name;
     osrm::Coordinate m_loc;
     int m_level;

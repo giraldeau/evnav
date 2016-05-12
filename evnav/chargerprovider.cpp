@@ -7,7 +7,7 @@ ChargerProvider::ChargerProvider()
 {
 }
 
-ChargerProvider::ChargerProvider(QVector<Charger> &lst)
+ChargerProvider::ChargerProvider(QMap<VertexId, Charger> &lst)
 {
     m_chargers = lst;
 }
@@ -19,7 +19,7 @@ void ChargerProvider::read(const QJsonArray &json)
         QJsonObject obj = json[i].toObject();
         Charger c;
         c.read(obj);
-        m_chargers.append(c);
+        m_chargers[c.id()] = c;
     }
 }
 
@@ -35,10 +35,10 @@ void ChargerProvider::loadJson(QString path)
 
 ChargerProvider ChargerProvider::filter(std::function<bool (Charger &)> predicate)
 {
-    QVector<Charger> filtered;
-    for (Charger &c: m_chargers) {
+    QMap<VertexId, Charger> filtered;
+    for (Charger &c: m_chargers.values()) {
         if (predicate(c)) {
-            filtered.append(c);
+            filtered[c.id()] = c;
         }
     }
     return ChargerProvider(filtered);

@@ -9,6 +9,7 @@
 #include <osrm/coordinate.hpp>
 
 #include <functional>
+#include "edge.h"
 #include "charger.h"
 
 using namespace osrm;
@@ -17,12 +18,13 @@ class ChargerProvider
 {
 public:
     ChargerProvider();
-    ChargerProvider(QVector<Charger> &lst);
+    ChargerProvider(QMap<VertexId, Charger> &lst);
 
     void read(const QJsonArray &json);
     void loadJson(QString path);
     int size() { return m_chargers.size(); }
-    QVector<Charger>& chargers() { return m_chargers; }
+    QList<Charger> chargers() { return m_chargers.values(); }
+    Charger charger(VertexId id) { return m_chargers[id]; }
 
 
     ChargerProvider filter(std::function<bool (Charger &)> predicate);
@@ -37,7 +39,7 @@ public slots:
 
 
 private:
-    QVector<Charger> m_chargers;
+    QMap<VertexId, Charger> m_chargers;
 };
 
 #endif // CHARGERPROVIDER_H
