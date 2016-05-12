@@ -14,10 +14,12 @@ TEMPLATE = lib
 CONFIG += staticlib
 
 SOURCES += graph.cpp \
-    edge.cpp
+    edge.cpp \
+    shortestpath.cpp
 
 HEADERS += graph.h \
-    edge.h
+    edge.h \
+    shortestpath.h
 unix {
     target.path = /usr/lib
     INSTALLS += target

@@ -1,5 +1,6 @@
-#include "evnav.h"
 #include <QElapsedTimer>
+#include "evnav.h"
+#include "graph.h"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -123,12 +124,119 @@ void Evnav::checkCachePerformance()
     qDebug() << "hist:" << hist;
 }
 
-#include <boost/graph/adjacency_list.hpp>
-using namespace boost;
-typedef adjacency_list<vecS, vecS, directedS,
-    no_property, property<edge_index_t, std::size_t> > Graph;
+double computeEnergy(Trip &trip, double eff)
+{
+    // FIXME: take into account the speed
+    return (trip.dist_m / 1000) * eff;         // kwh
+}
+
+double computeChargingTime(double energy, double power)
+{
+    return (energy / power) * 3600.0;  // s
+}
+
+double computeSetupTime()
+{
+    return 5 * 60.0; // 5 minutes to s
+}
+
+double computeTripTimeWithCharging(Trip &trip, double energy, double power)
+{
+    return trip.time_s +
+            computeSetupTime() +
+            computeChargingTime(energy, power);
+}
 
 void Evnav::route(Coordinate &src, Coordinate &dst)
 {
+    Trip trip;
+    Graph g;
+
+    double eff = 0.150;     // kWh/km
+    double power = 50.0;    // kW
+    double batt = 18.0;     // kWh
+    double SOC_act = 0.95;
+    double SOC_min = 0.05;
+    double SOC_max = 0.80;
+    double SOC_dyn = SOC_max - SOC_min;
+    double batt_avail = batt * SOC_act; // kWh
+
+    if (computeTrip(src, dst, trip) == Status::Ok) {
+        double e = computeEnergy(trip, eff);
+        double e_otw = 0; // kWh
+        if (e > batt_avail) {
+            e_otw = e - batt_avail;
+        }
+        qDebug() << "energy required  : " << e << "kWh";
+        qDebug() << "energy start     : " << batt_avail << "kWh";
+        qDebug() << "energy on the way: " << e_otw << "kWh";
+        if (e < batt_avail) {
+            qDebug() << "reaching destination without charging";
+            return;
+        } else {
+            int min_stops = std::ceil(e_otw / (batt * SOC_dyn));
+            qDebug() << "charging min_stops:" << min_stops;
+            qDebug() << "charging min_time :" << computeChargingTime(e_otw, power);
+        }
+    }
+
+    // Add edge from the source to all chargers
+    // FIXME: create waypoint class with chargers that extends it
+    VertexId srcId = -1;
+    VertexId dstId = -2;
+
+    qDebug() << "source to chargers:";
+    for (Charger &a : m_provider.chargers()) {
+        if (computeTrip(src, a.loc(), trip) == Status::Ok) {
+            double e = computeEnergy(trip, eff);
+            if (e < batt_avail) {
+                qDebug() << "can reach charger:" << a.name();
+                g.addEdge(Edge{srcId, a.id(), (double)trip.time_s});
+            }
+        }
+    }
+
+    // Add all intermediate chargers
+    qDebug() << "intermediate chargers";
+    chargerMatrix([&](Charger &a, Charger &b, Trip &t) {
+        // do not add edges between chargers that are too close
+        if (t.dist_m < 1000) {
+            return;
+        }
+        double e = computeEnergy(t, eff);
+        if (e < (batt * SOC_dyn)) {
+            //double charge_time = computeChargingTime(e, power);
+            double total_time = computeTripTimeWithCharging(trip, e, power);
+            Edge edge{a.id(), b.id(), total_time};
+            qDebug() << a.name() << " -> " << b.name();
+                        /*
+                     << "distance:" << (t.dist_m / 1000.0)
+                     << "travel time:" << (t.time_s / 3600.0)
+                     << "charge time:" << (charge_time / 3600.0)
+                     << "total time :" << (total_time / 3600.0);
+                    */
+            g.addEdge(edge);
+        }
+    });
+
+    // Add edge from all chargers to the destination
+    qDebug() << "chargers to destination";
+    for (Charger &a : m_provider.chargers()) {
+        if (computeTrip(a.loc(), dst, trip) == Status::Ok) {
+            double e = computeEnergy(trip, eff);
+            if (e < (batt * SOC_dyn)) {
+                qDebug() << "can reach charger:" << a.name();
+                double total_time = computeTripTimeWithCharging(trip, e, power);
+                g.addEdge(Edge{a.id(), dstId, total_time});
+            }
+        }
+    }
+
+    qDebug() << "graph size:" << g.E();
+
+    // TODO: write the graph as Json
+
+    // compute the shortest path
+    // compute detail of the trip
 
 }
