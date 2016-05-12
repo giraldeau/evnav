@@ -11,14 +11,12 @@ TEMPLATE = app
 SOURCES += main.cpp \
     evnav.cpp \
     chargerprovider.cpp \
-    charger.cpp \
-    graph.cpp
+    charger.cpp
 
 HEADERS += \
     evnav.h \
     chargerprovider.h \
-    charger.h \
-    graph.h
+    charger.h
 
 
 win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../graph/release/ -lgraph

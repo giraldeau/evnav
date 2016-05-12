@@ -4,6 +4,8 @@
 #
 #-------------------------------------------------
 
+include(../common.pri)
+
 QT       += core
 QT -= gui
 
@@ -11,9 +13,11 @@ TARGET = graph
 TEMPLATE = lib
 CONFIG += staticlib
 
-SOURCES += graph.cpp
+SOURCES += graph.cpp \
+    edge.cpp
 
-HEADERS += graph.h
+HEADERS += graph.h \
+    edge.h
 unix {
     target.path = /usr/lib
     INSTALLS += target
