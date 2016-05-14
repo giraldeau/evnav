@@ -4,4 +4,5 @@ SUBDIRS += \
     libevnav \
     example \
     evnav-cli \
-    tests
+    tests \
+    evnav-srv
