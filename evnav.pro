@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS += \
-    graph \
+    libevnav \
     example \
-    evnav \
+    evnav-cli \
     tests

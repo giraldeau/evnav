@@ -9,17 +9,25 @@ include(../common.pri)
 QT       += core
 QT -= gui
 
-TARGET = graph
+TARGET = evnav
 TEMPLATE = lib
 CONFIG += staticlib
 
 SOURCES += graph.cpp \
     edge.cpp \
-    shortestpath.cpp
+    shortestpath.cpp \
+    charger.cpp \
+    chargerprovider.cpp \
+    evnav.cpp
 
 HEADERS += graph.h \
     edge.h \
-    shortestpath.h
+    shortestpath.h \
+    charger.h \
+    chargerprovider.h \
+    evnav.h
+
+
 unix {
     target.path = /usr/lib
     INSTALLS += target
