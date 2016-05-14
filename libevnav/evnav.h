@@ -11,6 +11,7 @@
 #include <osrm/json_container.hpp>
 
 #include "chargerprovider.h"
+#include "evnavrequest.h"
 
 using namespace osrm;
 
@@ -27,14 +28,15 @@ public:
     ~Evnav();
 
     void setChargerProvider(ChargerProvider &provider) { m_provider = provider; }
+    void initGraph();
 
-    void route(Coordinate &src, Coordinate &dst);
+    void route(EvnavRequest &req);
 
     engine::Status computeTrip(const Coordinate &src, const Coordinate &dst, Trip &t);
     void chargerMatrix(std::function<void (Charger &, Charger &, Trip &)> cb);
     void computeDistanceHistogram(QVector<int> &hist, int bin);
 
-    Coordinate stringToCoordinates(QString str) {
+    static Coordinate stringToCoordinates(const QString &str) {
         QStringList items = str.split(",");
         double lng = items.at(0).toDouble();
         double lat = items.at(1).toDouble();

@@ -5,6 +5,8 @@
 
 #include <Tufao/AbstractHttpServerRequestHandler>
 
+#include "evnav.h"
+
 using namespace Tufao;
 
 class EvnavServer : public QObject,
@@ -13,12 +15,15 @@ class EvnavServer : public QObject,
     Q_OBJECT
 public:
     explicit EvnavServer(QObject *parent = 0);
+    void setEngine(Evnav *engine) { m_engine = engine; }
+
 signals:
 
 public slots:
     bool handleRequest(HttpServerRequest &req,
                        HttpServerResponse &res) override;
-
+private:
+    Evnav* m_engine;
 };
 
 #endif // EVNAVSERVER_H

@@ -4,6 +4,7 @@
 
 #include "graph.h"
 #include "shortestpath.h"
+#include "evnavrequest.h"
 
 class GraphTest : public QObject
 {
@@ -15,6 +16,8 @@ public:
 private Q_SLOTS:
     void testCase1();
     void testCase2();
+    void testCase3();
+    void testCase4();
 };
 
 GraphTest::GraphTest()
@@ -70,6 +73,25 @@ void GraphTest::testCase2()
     QList<Edge> path = sp.pathTo(1);
     QVERIFY2(path.size() == 3, "path has 3 edges");
 
+}
+
+void GraphTest::testCase3()
+{
+    QUrl url("/route/v1/evnav/13.388860,52.517037;13.397634,52.529407?battery=18&SOC_act=0.8");
+    EvnavRequest req;
+    int ret = req.parseUrl(url);
+    QVERIFY2(ret == 0, "return code indicates error");
+    QVERIFY2(fabs(req.m_battery - 18.0) < 0.001, "wrong battery parameter");
+    QVERIFY2(fabs(req.m_SOC_act - 0.8) < 0.001, "wrong SOC_act parameter");
+}
+
+#include <QTime>
+
+void GraphTest::testCase4()
+{
+    QTime time(0, 0, 0);
+    time = time.addSecs(1000);
+    QVERIFY(QString{"0:16"}.compare(time.toString("h:m")) == 0);
 }
 
 QTEST_APPLESS_MAIN(GraphTest)

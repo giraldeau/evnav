@@ -18,7 +18,8 @@ SOURCES += graph.cpp \
     charger.cpp \
     chargerprovider.cpp \
     evnav.cpp \
-    evnavserver.cpp
+    evnavserver.cpp \
+    evnavrequest.cpp
 
 HEADERS += graph.h \
     edge.h \
@@ -26,7 +27,8 @@ HEADERS += graph.h \
     charger.h \
     chargerprovider.h \
     evnav.h \
-    evnavserver.h
+    evnavserver.h \
+    evnavrequest.h
 
 
 unix {

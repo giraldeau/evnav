@@ -14,7 +14,7 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication app(argc, argv);
-    QCoreApplication::setApplicationName("evnav");
+    QCoreApplication::setApplicationName("evnav-cli");
     QCoreApplication::setApplicationVersion("0.1");
 
     QCommandLineParser parser;
@@ -57,11 +57,13 @@ int main(int argc, char *argv[])
     }
 
     evnav.setChargerProvider(dcfc);
+    evnav.initGraph();
 
-    Coordinate src = evnav.stringToCoordinates(parser.value(srcOption));
-    Coordinate dst = evnav.stringToCoordinates(parser.value(dstOption));
+    EvnavRequest req;
+    req.m_src = evnav.stringToCoordinates(parser.value(srcOption));
+    req.m_dst = evnav.stringToCoordinates(parser.value(dstOption));
 
-    evnav.route(src, dst);
+    evnav.route(req);
 
     return 0;
 }
