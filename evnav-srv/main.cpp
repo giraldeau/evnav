@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     handler.setEngine(&evnav);
 
     HttpServerRequestRouter router {
-        { QRegularExpression{"^/hello"}, handler },
+        { QRegularExpression{"^/route/v1/evnav/.*"}, handler },
         { QRegularExpression{",*"}, NotFoundHandler::handler() },
     };
 

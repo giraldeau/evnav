@@ -11,7 +11,7 @@ class EvnavRequest
 {
 public:
     EvnavRequest();
-    int parseUrl(QUrl &url);
+    int parseUrl(const QUrl &url);
 
 signals:
 

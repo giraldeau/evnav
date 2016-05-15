@@ -15,7 +15,7 @@ class EvnavServer : public QObject,
     Q_OBJECT
 public:
     explicit EvnavServer(QObject *parent = 0);
-    void setEngine(Evnav *engine) { m_engine = engine; }
+    void setEngine(Evnav *engine);
 
 signals:
 
