@@ -56,14 +56,18 @@ int main(int argc, char *argv[])
         }
     }
 
-    evnav.setChargerProvider(dcfc);
+    evnav.setChargerProvider(&dcfc);
     evnav.initGraph();
 
     EvnavRequest req;
+    QJsonObject res;
     req.m_src = evnav.stringToCoordinates(parser.value(srcOption));
     req.m_dst = evnav.stringToCoordinates(parser.value(dstOption));
 
-    evnav.route(req);
+    evnav.route(req, res);
+
+    QJsonDocument doc(res);
+    std::cout << doc.toJson().toStdString() << std::endl;
 
     return 0;
 }

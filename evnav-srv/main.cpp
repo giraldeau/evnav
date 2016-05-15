@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     ChargerProvider dcfc = provider.filter(provider.fastChargerFilter());
     qDebug() << "fast chargers found:" << dcfc.size();
 
-    evnav.setChargerProvider(dcfc);
+    evnav.setChargerProvider(&dcfc);
     evnav.initGraph();
 
     HttpServer httpd;

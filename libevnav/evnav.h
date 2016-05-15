@@ -12,6 +12,7 @@
 
 #include "chargerprovider.h"
 #include "evnavrequest.h"
+#include "graph.h"
 
 using namespace osrm;
 
@@ -27,21 +28,19 @@ public:
     Evnav(const QString &osrm);
     ~Evnav();
 
-    void setChargerProvider(ChargerProvider &provider) { m_provider = provider; }
+    void setChargerProvider(ChargerProvider *provider);
+    ChargerProvider *getChargerProvider();
     void initGraph();
 
-    void route(EvnavRequest &req);
+    void route(EvnavRequest &req, QJsonObject &result);
+    void write(QVector<Edge> &path, QJsonObject &json);
 
     engine::Status computeTrip(const Coordinate &src, const Coordinate &dst, Trip &t);
     void chargerMatrix(std::function<void (Charger &, Charger &, Trip &)> cb);
     void computeDistanceHistogram(QVector<int> &hist, int bin);
 
-    static Coordinate stringToCoordinates(const QString &str) {
-        QStringList items = str.split(",");
-        double lng = items.at(0).toDouble();
-        double lat = items.at(1).toDouble();
-        return Coordinate{util::FloatLongitude(lng), util::FloatLatitude(lat)};
-    }
+    static Coordinate stringToCoordinates(const QString &str);
+    static QString formatTime(int sec);
 
 signals:
 
@@ -49,9 +48,10 @@ public slots:
 
 private:
     void checkCachePerformance();
+    void makeGraph(Graph &g, EvnavRequest &req, VertexId srcId, VertexId dstId);
 
     OSRM *m_osrm;
-    ChargerProvider m_provider;
+    ChargerProvider *m_provider; // FIXME: should use QSharedPointer, let's assume the object is always live
     QMap<int, QMap<int, Trip>> m_cache;
 
 };

@@ -17,18 +17,18 @@ SOURCES += graph.cpp \
     shortestpath.cpp \
     charger.cpp \
     chargerprovider.cpp \
-    evnav.cpp \
     evnavserver.cpp \
-    evnavrequest.cpp
+    evnavrequest.cpp \
+    evnav.cpp
 
 HEADERS += graph.h \
     edge.h \
     shortestpath.h \
     charger.h \
     chargerprovider.h \
-    evnav.h \
     evnavserver.h \
-    evnavrequest.h
+    evnavrequest.h \
+    evnav.h
 
 
 unix {

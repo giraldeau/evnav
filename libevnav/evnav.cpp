@@ -24,6 +24,16 @@ Evnav::~Evnav()
     delete m_osrm;
 }
 
+void Evnav::setChargerProvider(ChargerProvider *provider)
+{
+    m_provider = provider;
+}
+
+ChargerProvider *Evnav::getChargerProvider()
+{
+    return m_provider;
+}
+
 /* Source:
  * http://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
  *
@@ -79,8 +89,8 @@ engine::Status Evnav::computeTrip(const Coordinate &src, const Coordinate &dst, 
 
 void Evnav::chargerMatrix(std::function<void (Charger &, Charger &, Trip &)> cb)
 {
-    for (Charger &a : m_provider.chargers()) {
-        for (Charger &b : m_provider.chargers()) {
+    for (Charger &a : m_provider->chargers()) {
+        for (Charger &b : m_provider->chargers()) {
             if (a.id() == b.id()) {
                 continue;
             }
@@ -112,6 +122,14 @@ void Evnav::computeDistanceHistogram(QVector<int> &hist, int bin)
     });
 }
 
+Coordinate Evnav::stringToCoordinates(const QString &str)
+{
+    QStringList items = str.split(",");
+    double lng = items.at(0).toDouble();
+    double lat = items.at(1).toDouble();
+    return Coordinate{util::FloatLongitude(lng), util::FloatLatitude(lat)};
+}
+
 // http://stackoverflow.com/questions/14539867/how-to-display-a-progress-indicator-in-pure-c-c-cout-printf
 // FIXME: that should be a proper progress bar
 void progress(float progress) {
@@ -130,7 +148,7 @@ void progress(float progress) {
 void Evnav::initGraph()
 {
     float count = 0;
-    float total = m_provider.size() * m_provider.size();
+    float total = m_provider->size() * m_provider->size();
     qDebug() << "pre-computing distances between chargers... " << total;
     chargerMatrix([&](Charger &a, Charger &b, Trip &t) {
         Q_UNUSED(a); Q_UNUSED(b); Q_UNUSED(t);
@@ -181,18 +199,79 @@ double computeTripTimeWithCharging(Trip &trip, double energy, double power)
             computeChargingTime(energy, power);
 }
 
-QString formatTime(int sec)
+QString Evnav::formatTime(int sec)
 {
     static const QString timeFmt("h:mm");
     QTime time(0, 0, 0);
     return time.addSecs(sec).toString(timeFmt);
 }
 
-void Evnav::route(EvnavRequest &req)
+void Evnav::makeGraph(Graph &g, EvnavRequest &req, VertexId srcId, VertexId dstId)
 {
+    Trip trip;
+    // FIXME: move to EvnavRequest?
+    double SOC_dyn = req.m_SOC_max - req.m_SOC_min;
+    double batt_act = req.m_battery * req.m_SOC_act; // kWh
+    double batt_dyn = req.m_battery * SOC_dyn;
 
+    // Add edge from the source to all chargers
+    // FIXME: create waypoint class with chargers that extends it
+
+    for (Charger &a : m_provider->chargers()) {
+        if (computeTrip(req.m_src, a.loc(), trip) == Status::Ok) {
+            double e = computeEnergy(trip, req.m_efficiency);
+            if (e < batt_act) {
+                Edge edge(srcId, a.id(), (double)trip.time_s);
+                edge.m_travel_time = trip.time_s;
+                edge.m_dist = trip.dist_m;
+                edge.m_energy = e;
+                g.addEdge(edge);
+            }
+        }
+    }
+
+    // Add all intermediate chargers
+    chargerMatrix([&](Charger &a, Charger &b, Trip &t) {
+        // do not add edges between chargers that are too close
+        if (t.dist_m < 1000) {
+            return;
+        }
+        double e = computeEnergy(t, req.m_efficiency);
+        if (e < batt_dyn) {
+            double total_time = computeTripTimeWithCharging(t, e, req.m_power_avg);
+            Edge edge(a.id(), b.id(), total_time);
+            edge.m_energy = e;
+            edge.m_charge_time = computeChargingTime(e, req.m_power_avg);
+            edge.m_dist = t.dist_m;
+            edge.m_travel_time = t.time_s;
+            g.addEdge(edge);
+        }
+    });
+
+    // Add edge from all chargers to the destination
+    for (Charger &a : m_provider->chargers()) {
+        if (computeTrip(a.loc(), req.m_dst, trip) == Status::Ok) {
+            double e = computeEnergy(trip, req.m_efficiency);
+            if (e < batt_dyn) {
+                double total_time = computeTripTimeWithCharging(trip, e, req.m_power_avg);
+                Edge edge(a.id(), dstId, total_time);
+                edge.m_energy = e;
+                edge.m_charge_time = computeChargingTime(e, req.m_power_avg);
+                edge.m_dist = trip.dist_m;
+                edge.m_travel_time = trip.time_s;
+                g.addEdge(edge);
+            }
+        }
+    }
+}
+
+void Evnav::route(EvnavRequest &req, QJsonObject &json)
+{
     Trip trip;
     Graph g;
+
+    VertexId srcId = -1;
+    VertexId dstId = -2;
 
     double SOC_dyn = req.m_SOC_max - req.m_SOC_min;
     double batt_act = req.m_battery * req.m_SOC_act; // kWh
@@ -209,6 +288,20 @@ void Evnav::route(EvnavRequest &req)
         qDebug() << "energy on the way: " << e_otw << "kWh";
         if (e < batt_act) {
             qDebug() << "reaching destination without charging";
+
+            // FIXME: collect result processing
+            json["code"] = "Ok";
+            json["message"] = "no charging required";
+
+            QJsonObject summary;
+            summary["distance"] = trip.dist_m;
+            summary["duration"] = trip.time_s;
+            summary["energy"] = e;
+            summary["driving_duration"] = trip.time_s;
+            summary["charging_duration"] = 0;
+            summary["charging_cost"] = 0;
+            json["route_summary"] = summary;
+            json["charging_steps"] = QJsonArray{};
             return;
         } else {
             int min_stops = std::ceil(e_otw / batt_dyn);
@@ -218,110 +311,88 @@ void Evnav::route(EvnavRequest &req)
         }
     }
 
-    // Add edge from the source to all chargers
-    // FIXME: create waypoint class with chargers that extends it
-    VertexId srcId = -1;
-    VertexId dstId = -2;
 
-    qDebug() << "source to chargers:";
-    for (Charger &a : m_provider.chargers()) {
-        if (computeTrip(req.m_src, a.loc(), trip) == Status::Ok) {
-            double e = computeEnergy(trip, req.m_efficiency);
-            if (e < batt_act) {
-                //qDebug() << "can reach charger:" << a.name();
-                Edge edge(srcId, a.id(), (double)trip.time_s);
-                edge.m_travel_time = trip.time_s;
-                edge.m_dist = trip.dist_m;
-                edge.m_energy = e;
-                g.addEdge(edge);
-            }
-        }
-    }
-
-    // Add all intermediate chargers
-    //qDebug() << "intermediate chargers";
-    chargerMatrix([&](Charger &a, Charger &b, Trip &t) {
-        // do not add edges between chargers that are too close
-        if (t.dist_m < 1000) {
-            return;
-        }
-        double e = computeEnergy(t, req.m_efficiency);
-        if (e < batt_dyn) {
-            //qDebug() << "reachable charger:" << a.name() << " -> " << b.name();
-            double total_time = computeTripTimeWithCharging(t, e, req.m_power_avg);
-            Edge edge(a.id(), b.id(), total_time);
-            edge.m_energy = e;
-            edge.m_charge_time = computeChargingTime(e, req.m_power_avg);
-            edge.m_dist = t.dist_m;
-            edge.m_travel_time = t.time_s;
-            g.addEdge(edge);
-        }
-    });
-
-    // Add edge from all chargers to the destination
-    //qDebug() << "chargers to destination";
-    for (Charger &a : m_provider.chargers()) {
-        if (computeTrip(a.loc(), req.m_dst, trip) == Status::Ok) {
-            double e = computeEnergy(trip, req.m_efficiency);
-            if (e < batt_dyn) {
-                //qDebug() << "can reach charger:" << a.name();
-                double total_time = computeTripTimeWithCharging(trip, e, req.m_power_avg);
-                Edge edge(a.id(), dstId, total_time);
-                edge.m_energy = e;
-                edge.m_charge_time = computeChargingTime(e, req.m_power_avg);
-                edge.m_dist = trip.dist_m;
-                edge.m_travel_time = trip.time_s;
-                g.addEdge(edge);
-            }
-        }
-    }
-
+    makeGraph(g, req, srcId, dstId);
     qDebug() << "graph size:" << g.E();
     // TODO: write the graph as Json
 
     ShortestPath sp(g, srcId);
     if (sp.hasPathTo(dstId)) {
         QVector<Edge> path = sp.pathTo(dstId).toVector();
-        if (path.isEmpty()) {
-            qDebug() << "error: found path, but path is empty";
-            return;
-        }
-        qDebug() << "charging path found!";
-        double energy = 0;
-        double charge_time = 0;
-        double travel_time = 0;
-        double distance = 0;
-        for (int i = 0; i < path.size(); i++) {
-            Edge &e = path[i];
-            QString name("---");
-            double next_charge = 0;
-            if (i < path.size() - 1) {
-                next_charge = path[i + 1].m_charge_time;
-                name = m_provider.charger(e.to()).name();
-            }
-            qDebug() << "step:" << i <<
-                        "charge at:" << name  <<
-                        "travel time:" << formatTime(e.m_travel_time) <<
-                        "charge time:" << formatTime(next_charge) <<
-                        "energy:" << e.m_energy;
-            energy += e.m_energy;
-            charge_time += e.m_charge_time;
-            travel_time += e.m_travel_time;
-            distance += e.m_dist;
-        }
-        double cost = ((charge_time / 3600.0) * 10.0);
-
-        qDebug() << "SUMMARY:";
-        qDebug() << "travel time:" << formatTime(travel_time);
-        qDebug() << "charge time:" << formatTime(charge_time);
-        qDebug() << "setup time:" << formatTime(computeSetupTime() * path.size() - 1);
-        qDebug() << "total time:" << formatTime(sp.distTo(dstId));
-        qDebug() << "number of charge:" << path.size() - 1;
-        qDebug() << "energy:" << energy;
-        qDebug() << "fast charger cost:" << QString("%1").arg(cost, 0, 'f', 2);
-
+        write(path, json);
     } else {
         qDebug() << "cannot reach destination with this electric car";
     }
 
+}
+
+/*
+ { "status": 200,
+   "route_summary": {
+    "distance": Number,
+    "duration": Number,
+    "driving_duration": Number,
+    "charge_duration": Number,
+    "charge_cost": Float,
+   }
+   "chargepoints": [
+    { "name": String, "location": [ Float, Float ], "recharge_energy", "recharge_time": Number }
+   ]
+ }
+*/
+
+void Evnav::write(QVector<Edge> &path, QJsonObject &json)
+{
+    // by convention with osrm
+    QJsonObject summary;
+    QJsonArray charging_steps;
+
+    double total_energy = 0;
+    double total_charge_time = 0;
+    double total_travel_time = 0;
+    double total_distance = 0;
+
+    for (int i = 0; i < path.size(); i++) {
+        Edge &e = path[i];
+        // FIXME: overload operator+=
+        total_energy += e.m_energy;
+        total_charge_time += e.m_charge_time;
+        total_travel_time += e.m_travel_time;
+        total_distance += e.m_dist;
+    }
+
+    for (int i = 0; i < path.size() - 1; i++) {
+        Edge &e = path[i];
+        Charger charger = m_provider->charger(e.to());
+        QJsonArray loc;
+        // I would rather do: charger.loc().lon().toFloat();
+        QJsonValue lon((double)util::toFloating(charger.loc().lon));
+        QJsonValue lat((double)util::toFloating(charger.loc().lat));
+        loc.append(lon);
+        loc.append(lat);
+
+        QJsonObject step;
+        step["name"] = charger.name();
+        step["location"] = loc;
+
+        // we charge for the next leg
+        step["energy"] = path[i + 1].m_energy;
+        step["charging_duration"] = path[i + 1].m_charge_time;
+        step["charging_cost"] = (path[i + 1].m_charge_time / 3600.0) * 10.0; // 10 $/h
+
+        charging_steps.append(step);
+    }
+
+    double total_cost = ((total_charge_time / 3600.0) * 10.0);
+
+    summary["distance"] = total_distance;
+    summary["duration"] = total_charge_time + total_travel_time;
+    summary["energy"] = total_energy;
+    summary["driving_duration"] = total_travel_time;
+    summary["charging_duration"] = total_charge_time;
+    summary["charging_cost"] = total_cost;
+    json["route_summary"] = summary;
+    json["chaging_steps"] = charging_steps;
+
+    return;
 }
