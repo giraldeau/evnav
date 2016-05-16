@@ -21,6 +21,12 @@ void EvnavServer::setEngine(Evnav *engine)
 bool EvnavServer::handleRequest(HttpServerRequest &req,
                                 HttpServerResponse &res)
 {
+    res.writeHead(Tufao::HttpResponseStatus::OK);
+    res.headers().insert("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
+    res.headers().insert("Access-Control-Allow-Methods", "GET");
+    res.headers().insert("Access-Control-Allow-Origin", "*");
+    res.headers().replace("Content-Type", "application/json; charset=UTF-8");
+
     // parse url for src,dst
     EvnavRequest evreq;
     QJsonObject json;
@@ -37,8 +43,6 @@ bool EvnavServer::handleRequest(HttpServerRequest &req,
 
 end:
     QJsonDocument doc(json);
-    res.writeHead(Tufao::HttpResponseStatus::OK);
-    res.headers().replace("Content-Type", "application/json");
     res.end(doc.toJson());
     return true;
 }
