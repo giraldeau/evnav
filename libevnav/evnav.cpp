@@ -291,7 +291,7 @@ void Evnav::route(EvnavRequest &req, QJsonObject &json)
 
             // FIXME: collect result processing
             json["code"] = "Ok";
-            json["message"] = "no charging required";
+            json["message"] = "reachable";
 
             QJsonObject summary;
             summary["distance"] = trip.dist_m;
@@ -321,6 +321,8 @@ void Evnav::route(EvnavRequest &req, QJsonObject &json)
         QVector<Edge> path = sp.pathTo(dstId).toVector();
         write(path, json);
     } else {
+        json["code"] = "Ok";
+        json["message"] = "unreachable";
         qDebug() << "cannot reach destination with this electric car";
     }
 
@@ -385,6 +387,8 @@ void Evnav::write(QVector<Edge> &path, QJsonObject &json)
 
     double total_cost = ((total_charge_time / 3600.0) * 10.0);
 
+    json["code"] = "Ok";
+    json["message"] = "reachable";
     summary["distance"] = total_distance;
     summary["duration"] = total_charge_time + total_travel_time;
     summary["energy"] = total_energy;
@@ -392,7 +396,7 @@ void Evnav::write(QVector<Edge> &path, QJsonObject &json)
     summary["charging_duration"] = total_charge_time;
     summary["charging_cost"] = total_cost;
     json["route_summary"] = summary;
-    json["chaging_steps"] = charging_steps;
+    json["charging_steps"] = charging_steps;
 
     return;
 }
