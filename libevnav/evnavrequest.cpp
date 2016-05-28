@@ -41,5 +41,17 @@ int EvnavRequest::parseUrl(const QUrl &url)
     if (query.hasQueryItem("SOC_act")) {
         m_SOC_act = query.queryItemValue("SOC_act").toDouble();
     }
+    if (query.hasQueryItem("SOC_min")) {
+        m_SOC_min = query.queryItemValue("SOC_min").toDouble();
+    }
+    if (query.hasQueryItem("SOC_max")) {
+        m_SOC_max = query.queryItemValue("SOC_max").toDouble();
+    }
+    if (query.hasQueryItem("efficiency")) {
+        m_efficiency = query.queryItemValue("efficiency").toDouble();
+    }
+    if (query.hasQueryItem("power_avg")) {
+        m_power_avg = query.queryItemValue("power_avg").toDouble();
+    }
     return 0;
 }
