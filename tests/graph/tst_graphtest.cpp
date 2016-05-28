@@ -1,10 +1,14 @@
 #include <QString>
 #include <QtTest>
+#include <QTime>
 #include <QDebug>
+
+#include <QFile>
 
 #include "graph.h"
 #include "shortestpath.h"
 #include "evnavrequest.h"
+#include "elevationtile.h"
 
 class GraphTest : public QObject
 {
@@ -18,6 +22,7 @@ private Q_SLOTS:
     void testCase2();
     void testCase3();
     void testCase4();
+    void testCase5();
 };
 
 GraphTest::GraphTest()
@@ -85,13 +90,22 @@ void GraphTest::testCase3()
     QVERIFY2(fabs(req.m_SOC_act - 0.8) < 0.001, "wrong SOC_act parameter");
 }
 
-#include <QTime>
-
 void GraphTest::testCase4()
 {
     QTime time(0, 0, 0);
     time = time.addSecs(1000);
     QVERIFY(QString{"0:16"}.compare(time.toString("h:m")) == 0);
+}
+
+void GraphTest::testCase5()
+{
+    //lat=45.5062487&lon=-73.5985226 alt=170
+    ElevationTile tile;
+    QString data = QFINDTESTDATA("../../res/L18/N45W073.hgt");
+    qDebug() << data;
+    tile.load(data, 45, -73);
+    double alt = tile.query(45.5062487, -73.5985226);
+    QVERIFY2(fabs(alt - 170) < 0.001, "wrong altitude");
 }
 
 QTEST_APPLESS_MAIN(GraphTest)

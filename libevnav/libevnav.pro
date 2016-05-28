@@ -7,6 +7,9 @@
 QT       += core
 QT -= gui
 
+# Unkown module in QT: positioning
+# QT += positioning
+
 TARGET = evnav
 TEMPLATE = lib
 CONFIG += staticlib
@@ -19,7 +22,9 @@ SOURCES += graph.cpp \
     chargerprovider.cpp \
     evnavserver.cpp \
     evnavrequest.cpp \
-    evnav.cpp
+    evnav.cpp \
+    elevation.cpp \
+    elevationtile.cpp
 
 HEADERS += graph.h \
     edge.h \
@@ -28,7 +33,9 @@ HEADERS += graph.h \
     chargerprovider.h \
     evnavserver.h \
     evnavrequest.h \
-    evnav.h
+    evnav.h \
+    elevation.h \
+    elevationtile.h
 
 
 unix {
