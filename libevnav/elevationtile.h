@@ -10,8 +10,11 @@ class ElevationTile : public QObject
 public:
     explicit ElevationTile(QObject *parent = 0);
     ~ElevationTile();
-    void load(QString &path, double lon, double lat);
+    void load(const QString &path);
     double query(double lon, double lat);
+    int width();
+    int height();
+    int valueAt(int x, int y);
 
 signals:
 

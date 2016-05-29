@@ -5,4 +5,5 @@ SUBDIRS += \
     example \
     evnav-cli \
     tests \
-    evnav-srv
+    evnav-srv \
+    altview

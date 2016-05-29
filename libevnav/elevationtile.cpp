@@ -15,16 +15,34 @@ ElevationTile::~ElevationTile()
     }
 }
 
+int ElevationTile::width()
+{
+    return 1201;
+}
+
+int ElevationTile::height()
+{
+    return 1201;
+}
+
+int ElevationTile::valueAt(int x, int y)
+{
+    int alt = 0;
+    if (m_buf) {
+        int offset = (y * 1201 + x) * 2;
+        alt = m_buf[offset + 1] | m_buf[offset] << 8;
+    }
+    return alt;
+}
+
 void
-ElevationTile::load(QString &path, double lon, double lat)
+ElevationTile::load(const QString &path)
 {
     m_file.setFileName(path);
     if (m_file.open(QFile::ReadOnly)) {
         qDebug() << "file size:" << m_file.size();
         qDebug() << "theoric file" << (2 * 1201 * 1201);
         m_buf = m_file.map(0, m_file.size());
-        m_lon = lon;
-        m_lat = lat;
     }
 }
 

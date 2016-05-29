@@ -103,7 +103,7 @@ void GraphTest::testCase5()
     ElevationTile tile;
     QString data = QFINDTESTDATA("../../res/L18/N45W073.hgt");
     qDebug() << data;
-    tile.load(data, 45, -73);
+    tile.load(data);
     double alt = tile.query(45.5062487, -73.5985226);
     QVERIFY2(fabs(alt - 170) < 0.001, "wrong altitude");
 }
