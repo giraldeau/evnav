@@ -8,3 +8,8 @@ unix {
     INCLUDEPATH += /usr/local/include/osrm
 }
 
+# compile with ThreadSanitizer
+#QMAKE_CXX = clang++
+#QMAKE_LINK = clang++
+#QMAKE_CXXFLAGS = -fsanitize=thread
+#QMAKE_LIBS = -fsanitize=thread
