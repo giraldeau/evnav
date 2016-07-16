@@ -20,4 +20,10 @@ DEPENDPATH += $$PWD/../libevnav
 
 unix:!macx: PRE_TARGETDEPS += $$OUT_PWD/../libevnav/libevnav.a
 
+# FIXME: use parameter for installation prefix
+unix {
+    target.path = /usr/bin
+    INSTALLS += target
+}
+
 include(../common.pri)
