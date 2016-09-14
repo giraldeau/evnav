@@ -6,6 +6,8 @@ EvNav computes a charging plan for long distance travel in electric vehicle.
 
 [Demo](https://www.youtube.com/watch?v=zXEa5IlD1LQ)
 
+[Community](https://evnav.slack.com/)
+
 # Compiling
 
 Requirements:
