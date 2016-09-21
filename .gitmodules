@@ -1,0 +1,3 @@
+[submodule "3rdparty/tufao"]
+	path = 3rdparty/tufao
+	url = https://github.com/vinipsmaker/tufao.git

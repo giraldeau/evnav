@@ -15,6 +15,8 @@ Requirements:
  * [Recent Qt](http://www.qt.io/)
  * [Tufao web framework](https://github.com/vinipsmaker/tufao)
 
+Tufao is included under `3rdparty` directory as git submodule. After checkout, use `git submodule --init --recursive` to fetch the dependencies. Build and install Tufao library before compiling EvNav.
+
 QtCreator is recommended.
  
 Shadow build steps:
