@@ -98,8 +98,10 @@ void VpTest::testVantagePointIndex()
     float radius = 0.12 * 120000;
     float query_lat = 0.4;
     float query_lon = 0.4;
-    auto res = index.find_nearest_neighbors_within_radius(query_lat, query_lon, radius);
-    std::sort(res.begin(), res.end());
+    auto res = index.find_all_nodes_within_radius(query_lat, query_lon, radius);
+    std::sort(res.begin(), res.end(), [](GeoPositionToNode::NearestNeighborhoodQueryResult &a, GeoPositionToNode::NearestNeighborhoodQueryResult &b){
+        return a.id < b.id;
+    });
 
     std::vector<unsigned> exp;
     for (int i = 0; i < len; i++) {
@@ -110,13 +112,14 @@ void VpTest::testVantagePointIndex()
 
     QVERIFY2(res.size() == exp.size(), "wrong number of neighbors returned");
     for (uint i = 0; i < exp.size(); i++) {
-        QVERIFY2(res[i] == exp[i], "wrong neighbor");
+        QVERIFY2(res[i].id == exp[i], "wrong neighbor");
     }
 
-    auto print_id = [](unsigned x){ cout << x << ","; };
+    auto print_id = [](GeoPositionToNode::NearestNeighborhoodQueryResult& x){ cout << x.id << ","; };
+    auto print_int = [](unsigned x){ cout << x << ","; };
     std::for_each(res.begin(), res.end(), print_id);
     cout << endl;
-    std::for_each(exp.begin(), exp.end(), print_id);
+    std::for_each(exp.begin(), exp.end(), print_int);
     cout << endl;
 }
 
@@ -130,7 +133,7 @@ void VpTest::benchmarkVantagePoint()
         float query_lat = dist(en);
         float query_lon = dist(en);
         float query_radius = 1000;
-        m_index->find_nearest_neighbors_within_radius(query_lat, query_lon, query_radius);
+        m_index->find_all_nodes_within_radius(query_lat, query_lon, query_radius);
     }
 }
 

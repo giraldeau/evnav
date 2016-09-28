@@ -8,7 +8,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <osrm/coordinate.hpp>
+#include <osrm/util/coordinate.hpp>
 
 #include "edge.h"
 
@@ -40,7 +40,7 @@ public:
     Charger();
     QString name() { return m_name; }
     VertexId id() { return m_id; }
-    osrm::Coordinate loc() { return m_loc; }
+    osrm::util::Coordinate loc() { return m_loc; }
     int network_id() { return m_network_id; }
     int level() { return m_level; }
     void read(const QJsonObject &json);
@@ -48,7 +48,7 @@ public:
 private:
     VertexId m_id;
     QString m_name;
-    osrm::Coordinate m_loc;
+    osrm::util::Coordinate m_loc;
     int m_level;
     int m_network_id;
     static QAtomicInt m_count;
