@@ -60,7 +60,10 @@ void VpTest::initTestCase()
     apply_permutation(permute, m_lon);
 
     // build the index
+    QElapsedTimer time;
+    time.start();
     m_index = new GeoPositionToNode(m_lat, m_lon);
+    qDebug() << "vp tree build time:" << time.elapsed() << "ms";
 }
 
 void VpTest::cleanupTestCase()

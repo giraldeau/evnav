@@ -3,4 +3,5 @@ TEMPLATE = subdirs
 SUBDIRS += \
     graph \
     routingkit \
-    vp
+    vp \
+    algo

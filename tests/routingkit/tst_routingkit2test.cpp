@@ -9,6 +9,7 @@
 #include <routingkit/contraction_hierarchy.h>
 #include <routingkit/inverse_vector.h>
 #include <routingkit/geo_position_to_node.h>
+#include <routingkit/permutation.h>
 
 using namespace RoutingKit;
 using namespace std;
@@ -26,7 +27,7 @@ private Q_SLOTS:
     void benchmarkQuery();
     void benchmarkQueryExpandNode();
     void benchmarkQueryExpandEdge();
-    void testNeighborQuery();
+	void testNeighborQuery();
 
 private:
     void doQuery(ContractionHierarchyQuery &query, bool expand_node, bool expand_edge);
@@ -130,7 +131,7 @@ void Routingkit2Test::testNeighborQuery()
         int node = qrand() % (m_graph.node_count() - 1);
         float lat = m_graph.latitude[node] + dist(en);
         float lon = m_graph.longitude[node] + dist(en);
-        auto res = index.find_nearest_neighbor_within_radius(lat, lon, 1000);
+		auto res = index.find_nearest_neighbor_within_radius(lat, lon, 1100);
         QVERIFY(res.id != invalid_id);
     }
 }
