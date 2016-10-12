@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
     RouteParameters params;
     for (std::pair<double, double> &pair: coords) {
-        params.coordinates.push_back({util::FloatLongitude(pair.first), util::FloatLatitude(pair.second)});
+        params.coordinates.push_back({util::FloatLongitude{pair.first}, util::FloatLatitude{pair.second}});
     }
 
     json::Object result;

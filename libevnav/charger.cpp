@@ -16,6 +16,6 @@ void Charger::read(const QJsonObject &json)
     QJsonObject loc = json["LatLng"].toObject();
     double lat = loc["Lat"].toDouble();
     double lng = loc["Lng"].toDouble();
-    m_loc = Coordinate{util::FloatLongitude(lng), util::FloatLatitude(lat)};
+    m_loc = util::Coordinate{util::FloatLongitude{lng}, util::FloatLatitude{lat}};
 }
 

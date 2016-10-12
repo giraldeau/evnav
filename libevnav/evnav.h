@@ -39,7 +39,7 @@ public:
     void chargerMatrix(std::function<void (Charger &, Charger &, Trip &)> cb);
     void computeDistanceHistogram(QVector<int> &hist, int bin);
 
-    static Coordinate stringToCoordinates(const QString &str);
+    static util::Coordinate stringToCoordinates(const QString &str);
     static QString formatTime(int sec);
 
 signals:

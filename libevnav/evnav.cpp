@@ -122,12 +122,12 @@ void Evnav::computeDistanceHistogram(QVector<int> &hist, int bin)
     });
 }
 
-Coordinate Evnav::stringToCoordinates(const QString &str)
+util::Coordinate Evnav::stringToCoordinates(const QString &str)
 {
     QStringList items = str.split(",");
     double lng = items.at(0).toDouble();
     double lat = items.at(1).toDouble();
-    return Coordinate{util::FloatLongitude(lng), util::FloatLatitude(lat)};
+    return util::Coordinate{util::FloatLongitude{lng}, util::FloatLatitude{lat}};
 }
 
 // http://stackoverflow.com/questions/14539867/how-to-display-a-progress-indicator-in-pure-c-c-cout-printf
