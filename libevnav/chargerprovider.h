@@ -18,19 +18,19 @@ class ChargerProvider
 {
 public:
     ChargerProvider();
-    ChargerProvider(QMap<VertexId, Charger> &lst);
+	ChargerProvider(QVector<Charger> &lst);
 
     void read(const QJsonArray &json);
     void loadJson(QString path);
     int size() { return m_chargers.size(); }
-    QList<Charger> chargers() { return m_chargers.values(); }
+	QVector<Charger> chargers() { return m_chargers; }
     Charger charger(VertexId id) { return m_chargers[id]; }
 
 
-    ChargerProvider filter(std::function<bool (Charger &)> predicate);
+	ChargerProvider filter(std::function<bool (const Charger &)> predicate);
 
     auto fastChargerFilter() {
-        return [](Charger &c){ return c.level() == 3; };
+		return [](const Charger &c){ return c.m_level == 3; };
     }
 
 signals:
@@ -39,7 +39,7 @@ public slots:
 
 
 private:
-    QMap<VertexId, Charger> m_chargers;
+	QVector<Charger> m_chargers;
 };
 
 #endif // CHARGERPROVIDER_H

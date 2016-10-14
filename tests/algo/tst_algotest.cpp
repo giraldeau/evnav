@@ -8,6 +8,8 @@
 #include <routingkit/permutation.h>
 #include <routingkit/id_queue.h>
 
+#include "chargerprovider.h"
+
 using namespace RoutingKit;
 
 class AlgoTest : public QObject
@@ -39,13 +41,12 @@ void AlgoTest::testPriorityQueue()
 
 	auto permute = random_permutation(data.size(), en);
 
-	for (int i = 0; i < data.size(); i++) {
+	for (uint i = 0; i < data.size(); i++) {
 		queue.push({permute[i], data[permute[i]]});
 	}
 
 	while (!queue.empty()) {
 		const IDKeyPair &item = queue.pop();
-		qDebug() << item.id << item.key;
 	}
 
 }

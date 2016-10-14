@@ -17,8 +17,18 @@ TEMPLATE = app
 
 SOURCES += tst_algotest.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
+DEFINES += TOPSRCDIR=\\\"\"$${top_srcdir}\"\\\"
 
 QMAKE_CXXFLAGS += -I$${PWD}/../../3rdparty/RoutingKit/include
 QMAKE_LFLAGS += -L$${PWD}/../../3rdparty/RoutingKit/lib
 
 LIBS += -L$${PWD}/../../3rdparty/RoutingKit/lib -lroutingkit
+
+unix:!macx: LIBS += -L$$OUT_PWD/../../libevnav/ -levnav
+
+INCLUDEPATH += $$PWD/../../libevnav
+DEPENDPATH += $$PWD/../../libevnav
+
+unix:!macx: PRE_TARGETDEPS += $$OUT_PWD/../../libevnav/libevnav.a
+
+include(../../common.pri)

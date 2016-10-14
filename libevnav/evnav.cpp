@@ -91,17 +91,17 @@ void Evnav::chargerMatrix(std::function<void (Charger &, Charger &, Trip &)> cb)
 {
     for (Charger &a : m_provider->chargers()) {
         for (Charger &b : m_provider->chargers()) {
-            if (a.id() == b.id()) {
+			if (a.m_id == b.m_id) {
                 continue;
             }
             Trip res;
-            if (m_cache.contains(a.id()) &&
-                    m_cache.value(a.id()).contains(b.id())) {
-                res = m_cache[a.id()][b.id()];
+			if (m_cache.contains(a.m_id) &&
+					m_cache.value(a.m_id).contains(b.m_id)) {
+				res = m_cache[a.m_id][b.m_id];
             } else {
-                engine::Status s = computeTrip(a.loc(), b.loc(), res);
+				engine::Status s = computeTrip(a.m_loc, b.m_loc, res);
                 if (s == Status::Ok) {
-                    m_cache[a.id()][b.id()] = res;
+					m_cache[a.m_id][b.m_id] = res;
                 }
             }
             // FIXME: should we call an error callback?
@@ -218,10 +218,10 @@ void Evnav::makeGraph(Graph &g, EvnavRequest &req, VertexId srcId, VertexId dstI
     // FIXME: create waypoint class with chargers that extends it
 
     for (Charger &a : m_provider->chargers()) {
-        if (computeTrip(req.m_src, a.loc(), trip) == Status::Ok) {
+		if (computeTrip(req.m_src, a.m_loc, trip) == Status::Ok) {
             double e = computeEnergy(trip, req.m_efficiency);
             if (e < batt_act) {
-                Edge edge(srcId, a.id(), (double)trip.time_s);
+				Edge edge(srcId, a.m_id, (double)trip.time_s);
                 edge.m_travel_time = trip.time_s;
                 edge.m_dist = trip.dist_m;
                 edge.m_energy = e;
@@ -239,7 +239,7 @@ void Evnav::makeGraph(Graph &g, EvnavRequest &req, VertexId srcId, VertexId dstI
         double e = computeEnergy(t, req.m_efficiency);
         if (e < batt_dyn) {
             double total_time = computeTripTimeWithCharging(t, e, req.m_power_avg);
-            Edge edge(a.id(), b.id(), total_time);
+			Edge edge(a.m_id, b.m_id, total_time);
             edge.m_energy = e;
             edge.m_charge_time = computeChargingTime(e, req.m_power_avg);
             edge.m_dist = t.dist_m;
@@ -250,11 +250,11 @@ void Evnav::makeGraph(Graph &g, EvnavRequest &req, VertexId srcId, VertexId dstI
 
     // Add edge from all chargers to the destination
     for (Charger &a : m_provider->chargers()) {
-        if (computeTrip(a.loc(), req.m_dst, trip) == Status::Ok) {
+		if (computeTrip(a.m_loc, req.m_dst, trip) == Status::Ok) {
             double e = computeEnergy(trip, req.m_efficiency);
             if (e < batt_dyn) {
                 double total_time = computeTripTimeWithCharging(trip, e, req.m_power_avg);
-                Edge edge(a.id(), dstId, total_time);
+				Edge edge(a.m_id, dstId, total_time);
                 edge.m_energy = e;
                 edge.m_charge_time = computeChargingTime(e, req.m_power_avg);
                 edge.m_dist = trip.dist_m;
@@ -368,13 +368,13 @@ void Evnav::write(QVector<Edge> &path, QJsonObject &json)
         Charger charger = m_provider->charger(e.to());
         QJsonArray loc;
         // I would rather do: charger.loc().lon().toFloat();
-        QJsonValue lon((double)util::toFloating(charger.loc().lon));
-        QJsonValue lat((double)util::toFloating(charger.loc().lat));
+		QJsonValue lon((double)util::toFloating(charger.m_loc.lon));
+		QJsonValue lat((double)util::toFloating(charger.m_loc.lat));
         loc.append(lon);
         loc.append(lat);
 
         QJsonObject step;
-        step["name"] = charger.name();
+		step["name"] = charger.m_name;
         step["location"] = loc;
 
         // we charge for the next leg

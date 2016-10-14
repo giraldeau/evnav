@@ -1,10 +1,7 @@
 #include "charger.h"
 
-QAtomicInt Charger::m_count(0);
-
 Charger::Charger()
 {
-    m_id = m_count.fetchAndAddAcquire(1);
 }
 
 void Charger::read(const QJsonObject &json)
@@ -19,4 +16,3 @@ void Charger::read(const QJsonObject &json)
     m_loc = util::Coordinate{util::FloatLongitude{lng},
             util::FloatLatitude{lat}};
 }
-

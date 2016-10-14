@@ -7,19 +7,19 @@ ChargerProvider::ChargerProvider()
 {
 }
 
-ChargerProvider::ChargerProvider(QMap<VertexId, Charger> &lst)
+ChargerProvider::ChargerProvider(QVector<Charger> &lst)
 {
-    m_chargers = lst;
+	m_chargers = lst; // shallow copy, implicitly shared
 }
 
 void ChargerProvider::read(const QJsonArray &json)
 {
     m_chargers.clear();
+	m_chargers.resize(json.size());
     for (int i = 0; i < json.size(); ++i) {
         QJsonObject obj = json[i].toObject();
-        Charger c;
-        c.read(obj);
-        m_chargers[c.id()] = c;
+		m_chargers[i].read(obj);
+		m_chargers[i].m_id = i;
     }
 }
 
@@ -33,12 +33,12 @@ void ChargerProvider::loadJson(QString path)
     }
 }
 
-ChargerProvider ChargerProvider::filter(std::function<bool (Charger &)> predicate)
+ChargerProvider ChargerProvider::filter(std::function<bool (const Charger &)> predicate)
 {
-    QMap<VertexId, Charger> filtered;
-    for (Charger &c: m_chargers.values()) {
+	QVector<Charger> filtered;
+	for (const Charger &c: m_chargers) {
         if (predicate(c)) {
-            filtered[c.id()] = c;
+			filtered.push_back(c);
         }
     }
     return ChargerProvider(filtered);

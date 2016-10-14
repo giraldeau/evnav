@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 
     if (parser.isSet(verboseOption)) {
         for (Charger &charger: dcfc.chargers()) {
-            qDebug() << charger.id() << charger.name();
+			qDebug() << charger.m_id << charger.m_name;
         }
     }
 
