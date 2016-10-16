@@ -1,0 +1,11 @@
+{
+    "providers": [
+        {
+            "name": "",
+            "host": "",
+            "api": "addenergie-v1.1",
+            "user": "",
+            "password": ""
+        }
+    ]
+}

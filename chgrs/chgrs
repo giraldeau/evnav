@@ -1,0 +1,166 @@
+#!/usr/bin/python3
+import json
+import requests
+import time
+import base64
+import os
+
+# debug
+import pprint
+
+class BaseAPI(object):
+    def __init__(self, params):
+        self.params = params
+    def load(self, state):
+        pass
+    def save(self, state):
+        pass
+    def authenticate(self):
+        pass
+    def fetch(self):
+        pass
+
+class AddEnergieAPIv11(BaseAPI):
+
+    required_keys = [ "user", "password", "host" ]
+
+    def __init__(self, params):
+        super(AddEnergieAPIv11, self).__init__(params)
+        self.cookies = None
+        self.cookies_timestamp = 0
+        self.cookies_lifetime = 3600
+        self.is_dirty = False
+        self.data = None
+
+    def load(self, state):
+        if "cookies" in state and "timestamp" in state:
+            self.cookies = requests.utils.cookiejar_from_dict(state["cookies"])
+            self.cookies_timestamp = state["timestamp"]
+
+    def save(self, state):
+        if not self.is_dirty:
+            return
+        d = None
+        if self.cookies:
+            d = requests.utils.dict_from_cookiejar(self.cookies)
+        state["cookies"] = d
+        state["timestamp"] = self.cookies_timestamp
+
+    def check(self):
+        missing_keys = []
+        for key in self.required_keys:
+            if not key in self.params:
+                missing_keys.append(key)
+        if len(missing_keys) > 0:
+            print("missing config keys: {}".format(missing_keys))
+            return False
+        return True
+
+    def _update_cookies(self, req):
+        self.cookies = req.cookies
+        self.cookies_timestamp = time.monotonic()
+        self.is_dirty = True
+
+    def authenticate(self, force = False):
+        delta = time.monotonic() - self.cookies_timestamp
+        if delta < self.cookies_lifetime and not force:
+            print("already authenticated")
+            return True
+        print(self.params)
+        url = "https://%(host)s/Default.aspx?username=%(user)s&password=%(password)s" % self.params
+        print("authenticating")
+        r = requests.get(url)
+        print("status_code {}".format(r.status_code))
+        if r.status_code != 200:
+            print("error: authentication failed {}".format(r.status_code))
+            return False
+        if len(r.cookies) == 0:
+            print("error: cookie not found")
+            pprint.pprint(r.headers)
+            return False
+        self._update_cookies(r)
+        return True
+
+    def fetch(self):
+        self.data = None
+        if not self.authenticate():
+            return False
+        url = "https://%(host)s/Network/StationsList" % self.params
+        r = requests.get(url, cookies=self.cookies)
+        if r.status_code != 200:
+            print("error: fetch failed {}".format(r.status_code))
+            return False
+        self.data = r.json()
+        return True
+
+apis = {
+    "addenergie-v1.1": AddEnergieAPIv11
+}
+
+def main():
+    default_provider = "circuit_electrique"
+    config = {}
+    with open('remotes.json') as f:
+        config = json.load(f);
+
+    ce = None
+    for provider in config["providers"]:
+        print("Available provider: {}".format(provider["name"]))
+        if provider["name"] == default_provider:
+            ce = provider
+
+    # build the API adapter
+    klass = apis.get(ce.get("api"))
+    api = klass(ce)
+    if not api.check():
+        print("wrong config for provider {}".format(ce["name"]))
+    else:
+        print("config OK")
+
+    # state file
+    home = os.getenv("HOME")
+    loc = "{}/.config/chgrs".format(home)
+    if not os.path.isdir(loc):
+        os.makedirs(loc)
+    
+    state = {}
+    name = ce["name"]
+    state_file = os.path.join(loc, "state.json")
+    if os.path.exists(state_file) and os.stat(state_file).st_size > 0:
+        with open(state_file, "r") as f:
+            state = json.load(f)
+
+    if name not in state:
+        state[name] = {}
+
+    # load authentication from saved state
+    print("loading state...")
+    api.load(state[name])
+    
+    # fetch data
+    if not api.fetch():
+        # try forcing re-authentication
+        api.authenticate(force=True)
+        if not api.fetch():
+            print("fetch failed")
+            return
+
+    print("fetch OK, saving result...")
+    ts = time.strftime("%Y%m%d%-H%M%S", time.localtime())
+    out_file = "result_%s_%s.json" % (name, ts)
+    with open(out_file, "w") as f:
+        json.dump(api.data, f, indent=2)
+
+    # save state
+    if api.is_dirty:
+        api.save(state[name])
+        print("saving api state...")
+        with open(state_file, "w") as f:
+            f.truncate()
+            json.dump(state, f, indent=2)
+
+    print("done")
+
+if __name__=="__main__":
+    main()
+
