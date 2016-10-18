@@ -6,5 +6,12 @@ unix {
 
     # FIXME: do not make this path hardcoded
     INCLUDEPATH += /usr/local/include/osrm
+
+    # RPATH is set here for convenience to run the programs in the shadow build
+    # without installing libevnav.so or setting LD_LIBRARY_PATH.
+    CONFIG(debug) {
+        QMAKE_RPATHDIR += $${top_builddir}/libevnav/
+    }
 }
 
+DEFINES += TOPSRCDIR=\\\"\"$${top_srcdir}\"\\\"

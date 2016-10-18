@@ -4,8 +4,6 @@
 #
 #-------------------------------------------------
 
-include(../common.pri)
-
 QT       += core
 
 QT       -= gui
@@ -18,4 +16,4 @@ TEMPLATE = app
 
 SOURCES += main.cpp
 
-HEADERS +=
+include(../common.pri)

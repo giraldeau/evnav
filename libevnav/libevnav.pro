@@ -9,7 +9,7 @@ QT -= gui
 
 TARGET = evnav
 TEMPLATE = lib
-CONFIG += staticlib
+CONFIG += sharedlib
 CONFIG += TUFAO1
 
 SOURCES += graph.cpp \
