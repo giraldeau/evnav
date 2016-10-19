@@ -19,7 +19,9 @@ void ChargerProvider::read(const QJsonArray &json)
         QJsonObject obj = json[i].toObject();
         Charger c;
         c.read(obj);
-        m_chargers[c.id()] = c;
+        if (c.isValid()) {
+            m_chargers[c.id()] = c;
+        }
     }
 }
 
@@ -29,7 +31,8 @@ void ChargerProvider::loadJson(QString path)
     if (file.open(QIODevice::ReadOnly)) {
         QByteArray data = file.readAll();
         QJsonDocument doc(QJsonDocument::fromJson(data));
-        read(doc.array());
+        QJsonObject root = doc.object();
+        read(root["list"].toArray());
     }
 }
 

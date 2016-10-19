@@ -5,6 +5,7 @@
 #include "graph.h"
 #include "shortestpath.h"
 #include "evnavrequest.h"
+#include "chargerprovider.h"
 
 class GraphTest : public QObject
 {
@@ -18,6 +19,7 @@ private Q_SLOTS:
     void testCase2();
     void testCase3();
     void testCase4();
+    void testLoadCharger();
 };
 
 GraphTest::GraphTest()
@@ -92,6 +94,16 @@ void GraphTest::testCase4()
     QTime time(0, 0, 0);
     time = time.addSecs(1000);
     QVERIFY(QString{"0:16"}.compare(time.toString("h:m")) == 0);
+}
+
+void GraphTest::testLoadCharger()
+{
+    ChargerProvider provider;
+    QString path(TOPSRCDIR "/res/result_circuit_electrique_20161016170731.json");
+    provider.loadJson(path);
+    QVERIFY2(provider.size() > 0, "failed to load the charger list");
+    ChargerProvider dcfc = provider.filter(provider.fastChargerFilter());
+    QVERIFY2(dcfc.size() > 0, "failed to filter chargers");
 }
 
 QTEST_APPLESS_MAIN(GraphTest)

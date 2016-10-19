@@ -41,16 +41,15 @@ public:
     QString name() { return m_name; }
     VertexId id() { return m_id; }
     osrm::util::Coordinate loc() { return m_loc; }
-    int network_id() { return m_network_id; }
     int level() { return m_level; }
     void read(const QJsonObject &json);
+    bool isValid();
 
 private:
     VertexId m_id;
     QString m_name;
     osrm::util::Coordinate m_loc;
     int m_level;
-    int m_network_id;
     static QAtomicInt m_count;
 };
 

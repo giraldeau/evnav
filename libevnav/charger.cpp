@@ -10,12 +10,14 @@ Charger::Charger()
 void Charger::read(const QJsonObject &json)
 {
     m_name = json["ParkName"].toString();
-    m_level = json["Level"].toInt();
-    m_network_id = json["NetworkId"].toInt();
-
-    QJsonObject loc = json["LatLng"].toObject();
-    double lat = loc["Lat"].toDouble();
-    double lng = loc["Lng"].toDouble();
+    QJsonObject tmp = json["Ports"].toArray().at(0).toObject();
+    m_level = tmp["Level"].toInt();
+    double lat = json["Latitude"].toDouble();
+    double lng = json["Longitude"].toDouble();
     m_loc = util::Coordinate{util::FloatLongitude{lng}, util::FloatLatitude{lat}};
 }
 
+bool Charger::isValid()
+{
+    return (!m_name.isEmpty() && m_level != 0 && m_loc.IsValid());
+}
