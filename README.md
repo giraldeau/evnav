@@ -4,7 +4,8 @@ EvNav computes a charging plan for long distance travel in electric vehicle.
 
 ![EvNav Screenshot](/../master/screenshot/screenshot01.png?raw=true "Travel from Montreal to Quebec in electric car")
 
-[Demo](https://www.youtube.com/watch?v=zXEa5IlD1LQ)
+[Video](https://www.youtube.com/watch?v=zXEa5IlD1LQ)
+[Online service](http://evnav.openrapids.net)
 
 [Community](https://evnav.slack.com/)
 
