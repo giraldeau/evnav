@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import 'semantic-ui-css/semantic.css';
 import ParametersPannel from './RangeInput.js';
+import CarSelector from './CarSelector.js';
 
 const carParameters = [
   { id: "battery",
@@ -34,6 +35,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
+        <CarSelector />
         <ParametersPannel
           parameters={carParameters}/>
       </div>
