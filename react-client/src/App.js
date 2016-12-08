@@ -3,6 +3,7 @@ import './App.css';
 import 'semantic-ui-css/semantic.css';
 import ParametersPannel from './ParametersPannel.js';
 import CarSelector from './CarSelector.js';
+import Geocoder from './Geocoder.js'
 
 const carParameters = [
   { id: "battery",
@@ -31,29 +32,11 @@ const carParameters = [
   },
 ];
 
-import { Input } from 'semantic-ui-react'
-
-class GeocoderInput extends Component {
-  render() {
-    return  (
-      <Input
-        fluid
-        icon='location arrow'
-        iconPosition='left'
-        placeholder='Departure'
-        onChange={(event) => {
-          console.log(event.target.value);
-        }}
-      />
-    );
-  }
-}
-
 class App extends Component {
   render() {
     return (
       <div className="App">
-        <GeocoderInput />
+        <Geocoder />
         <CarSelector />
         <ParametersPannel
           parameters={carParameters}/>
