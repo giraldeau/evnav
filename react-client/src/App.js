@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import 'semantic-ui-css/semantic.css';
-import ParametersPannel from './RangeInput.js';
+import ParametersPannel from './ParametersPannel.js';
 import CarSelector from './CarSelector.js';
 
 const carParameters = [
@@ -31,10 +31,29 @@ const carParameters = [
   },
 ];
 
+import { Input } from 'semantic-ui-react'
+
+class GeocoderInput extends Component {
+  render() {
+    return  (
+      <Input
+        fluid
+        icon='location arrow'
+        iconPosition='left'
+        placeholder='Departure'
+        onChange={(event) => {
+          console.log(event.target.value);
+        }}
+      />
+    );
+  }
+}
+
 class App extends Component {
   render() {
     return (
       <div className="App">
+        <GeocoderInput />
         <CarSelector />
         <ParametersPannel
           parameters={carParameters}/>
