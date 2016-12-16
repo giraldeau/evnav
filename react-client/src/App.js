@@ -5,6 +5,8 @@ import ParametersPannel from './ParametersPannel.js';
 import CarSelector from './CarSelector.js';
 import Geocoder from './Geocoder.js'
 
+const accessToken = '';
+
 const carParameters = [
   { id: "battery",
     label: "Battery capacity",
@@ -36,7 +38,10 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <Geocoder />
+        <Geocoder 
+          accessToken={accessToken}
+          onSelect={(event) => { console.log(event); }}
+        />
         <CarSelector />
         <ParametersPannel
           parameters={carParameters}/>
