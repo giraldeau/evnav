@@ -17,8 +17,6 @@ void EvnavServer::handleRequest(QHttpRequest *req,
     EvnavRequest evreq;
     QJsonObject json;
 
-    qDebug() << req << res;
-
     int ret = evreq.parseUrl(req->url());
     if (ret < 0) {
         json["code"] = "error";

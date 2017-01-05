@@ -160,22 +160,6 @@ void Evnav::initGraph()
     qDebug() << "done";
 }
 
-void Evnav::checkCachePerformance()
-{
-    QVector<int> hist(50);
-    int bin = 10;
-
-    QElapsedTimer timer;
-    timer.start();
-    computeDistanceHistogram(hist, bin);
-    auto e1 = timer.nsecsElapsed();
-    timer.restart();
-    computeDistanceHistogram(hist, bin);
-    auto e2 = timer.nsecsElapsed();
-    qDebug() << "e1:" << e1 << "ms" << " e2:" << e2 << "ms";
-    qDebug() << "hist:" << hist;
-}
-
 double computeEnergy(Trip &trip, double eff)
 {
     // FIXME: take into account the speed
@@ -283,11 +267,13 @@ void Evnav::route(EvnavRequest &req, QJsonObject &json)
         if (e > batt_act) {
             e_otw = e - batt_act;
         }
+        /*
         qDebug() << "energy required  : " << e << "kWh";
         qDebug() << "energy start     : " << batt_act << "kWh";
         qDebug() << "energy on the way: " << e_otw << "kWh";
+        */
         if (e < batt_act) {
-            qDebug() << "reaching destination without charging";
+            //qDebug() << "reaching destination without charging";
 
             // FIXME: collect result processing
             json["code"] = "Ok";
@@ -306,14 +292,14 @@ void Evnav::route(EvnavRequest &req, QJsonObject &json)
         } else {
             int min_stops = std::ceil(e_otw / batt_dyn);
             double charging_time = computeChargingTime(e_otw, req.m_power_avg);
-            qDebug() << "charging min_stops:" << min_stops;
-            qDebug() << "charging min_time :" << formatTime(charging_time);
+            //qDebug() << "charging min_stops:" << min_stops;
+            //qDebug() << "charging min_time :" << formatTime(charging_time);
         }
     }
 
 
     makeGraph(g, req, srcId, dstId);
-    qDebug() << "graph size:" << g.E();
+    //qDebug() << "graph size:" << g.E();
     // TODO: write the graph as Json
 
     ShortestPath sp(g, srcId);
@@ -323,7 +309,7 @@ void Evnav::route(EvnavRequest &req, QJsonObject &json)
     } else {
         json["code"] = "Ok";
         json["message"] = "unreachable";
-        qDebug() << "cannot reach destination with this electric car";
+        //qDebug() << "cannot reach destination with this electric car";
     }
 
 }

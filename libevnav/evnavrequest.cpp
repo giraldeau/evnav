@@ -21,10 +21,9 @@ EvnavRequest::EvnavRequest() :
 
 int EvnavRequest::parseUrl(const QUrl &url)
 {
-    qDebug() << url;
-
     // parsing coordinates
-    QRegularExpression re("/route/v1/evnav/(?<src>([\\w.-]+),([\\w.-]+));(?<dst>([\\w.-]+),([\\w.-]+))[.]*");
+    static QRegularExpression re("/route/v1/evnav/(?<src>([\\w.-]+),([\\w.-]+));(?<dst>([\\w.-]+),([\\w.-]+))[.]*",
+                                 QRegularExpression::PatternOption::OptimizeOnFirstUsageOption);
     QRegularExpressionMatch m = re.match(url.toString());
     if (m.hasMatch()) {
         m_src = Evnav::stringToCoordinates(m.captured("src"));

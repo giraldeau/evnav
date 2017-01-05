@@ -47,7 +47,6 @@ signals:
 public slots:
 
 private:
-    void checkCachePerformance();
     void makeGraph(Graph &g, EvnavRequest &req, VertexId srcId, VertexId dstId);
 
     OSRM *m_osrm;
