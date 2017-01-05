@@ -12,3 +12,5 @@ SOURCES += main.cpp
 
 include(../common.pri)
 include(../libevnav.pri)
+
+LIBS += -L$${top_builddir}/3rdparty/qhttp/xbin -l:libqhttp.a

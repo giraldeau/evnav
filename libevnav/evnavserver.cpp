@@ -1,37 +1,25 @@
 #include "evnavserver.h"
 #include <QUrl>
-#include <Tufao/HttpServerRequest>
-#include <Tufao/HttpServerResponse>
-#include <Tufao/Headers>
 
 #include <osrm/coordinate.hpp>
 
 using namespace osrm;
 
-EvnavServer::EvnavServer(QObject *parent) : QObject(parent)
+EvnavServer::EvnavServer(Evnav *evnav, QObject *parent) :
+    QObject(parent), m_engine(evnav)
 {
-
 }
 
-void EvnavServer::setEngine(Evnav *engine)
+void EvnavServer::handleRequest(QHttpRequest *req,
+                                QHttpResponse *res)
 {
-    m_engine = engine;
-}
-
-bool EvnavServer::handleRequest(HttpServerRequest &req,
-                                HttpServerResponse &res)
-{
-    res.writeHead(Tufao::HttpResponseStatus::OK);
-    res.headers().insert("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
-    res.headers().insert("Access-Control-Allow-Methods", "GET");
-    res.headers().insert("Access-Control-Allow-Origin", "*");
-    res.headers().replace("Content-Type", "application/json; charset=UTF-8");
-
     // parse url for src,dst
     EvnavRequest evreq;
     QJsonObject json;
 
-    int ret = evreq.parseUrl(req.url());
+    qDebug() << req << res;
+
+    int ret = evreq.parseUrl(req->url());
     if (ret < 0) {
         json["code"] = "error";
         json["message"] = "cannot parse url";
@@ -39,11 +27,17 @@ bool EvnavServer::handleRequest(HttpServerRequest &req,
     }
 
     // compute the path
-    m_engine->route(evreq, json);
+    if (m_engine)
+        m_engine->route(evreq, json);
 
 end:
     QJsonDocument doc(json);
-    res.end(doc.toJson());
-    return true;
+    QByteArray data = doc.toJson();
+    res->setStatusCode(qhttp::ESTATUS_OK);
+    res->addHeaderValue("content-length", data.size());
+    res->addHeader("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
+    res->addHeader("Access-Control-Allow-Methods", "GET");
+    res->addHeader("Access-Control-Allow-Origin", "*");
+    res->addHeader("Content-Type", "application/json; charset=UTF-8");
+    res->end(data);
 }
-

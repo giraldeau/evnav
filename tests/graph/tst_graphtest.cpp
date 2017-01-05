@@ -99,7 +99,8 @@ void GraphTest::testCase4()
 void GraphTest::testLoadCharger()
 {
     ChargerProvider provider;
-    QString path(TOPSRCDIR "/res/result_circuit_electrique_20161016170731.json");
+    // TODO: do not hardcode the path to the file
+    QString path(TOPSRCDIR "/res/result_circuit_electrique_20161019165359.json");
     provider.loadJson(path);
     QVERIFY2(provider.size() > 0, "failed to load the charger list");
     ChargerProvider dcfc = provider.filter(provider.fastChargerFilter());

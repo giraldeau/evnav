@@ -2,26 +2,24 @@
 #define EVNAVSERVER_H
 
 #include <QObject>
-
-#include <Tufao/AbstractHttpServerRequestHandler>
+#include <qhttpserverrequest.hpp>
+#include <qhttpserverresponse.hpp>
 
 #include "evnav.h"
 
-using namespace Tufao;
+using namespace qhttp::server;
 
-class EvnavServer : public QObject,
-        public AbstractHttpServerRequestHandler
+class EvnavServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit EvnavServer(QObject *parent = 0);
-    void setEngine(Evnav *engine);
+    explicit EvnavServer(Evnav *evnav = 0, QObject *parent = 0);
 
 signals:
 
 public slots:
-    bool handleRequest(HttpServerRequest &req,
-                       HttpServerResponse &res) override;
+    void handleRequest(QHttpRequest *req,
+                       QHttpResponse *res);
 private:
     Evnav* m_engine;
 };

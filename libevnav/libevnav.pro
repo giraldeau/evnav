@@ -30,10 +30,13 @@ HEADERS += graph.h \
     evnavrequest.h \
     evnav.h
 
-
 unix {
     target.path = /usr/lib
     INSTALLS += target
 }
 
 include(../common.pri)
+
+LIBS += -L$${top_builddir}/3rdparty/qhttp/xbin -l:libqhttp.a
+
+#QMAKE_CXXFLAGS += -fsanitize=thread

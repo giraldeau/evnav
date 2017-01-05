@@ -1,6 +1,8 @@
 #include <QCoreApplication>
 #include <QCommandLineParser>
 #include <QUrl>
+#include <QDateTime>
+
 
 #include <Tufao/HttpServer>
 #include <Tufao/HttpServerRequest>
@@ -9,17 +11,22 @@
 #include <Tufao/NotFoundHandler>
 #include <Tufao/Headers>
 
+
 #include "evnav.h"
 #include "evnavserver.h"
 #include "chargerprovider.h"
 
+#include <qhttpserver.hpp>
+#include <qhttpserverrequest.hpp>
+#include <qhttpserverresponse.hpp>
+
 using namespace Tufao;
+using namespace qhttp::server;
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
-
     QCoreApplication app(argc, argv);
+
     QCoreApplication::setApplicationName("evnav-cli");
     QCoreApplication::setApplicationVersion("0.1");
 
@@ -50,20 +57,33 @@ int main(int argc, char *argv[])
     evnav.setChargerProvider(&dcfc);
     evnav.initGraph();
 
-    HttpServer httpd;
-    EvnavServer handler;
-    handler.setEngine(&evnav);
+    EvnavServer handler(&evnav);
+    EvnavServer *handlerPtr = &handler;
 
-    HttpServerRequestRouter router {
-        { QRegularExpression{"^/route/v1/evnav/.*"}, handler },
-        { QRegularExpression{",*"}, NotFoundHandler::handler() },
-    };
+    QRegularExpression evnavUrl{"^/route/v1/evnav/.*"};
+    evnavUrl.optimize();
 
-    QObject::connect(&httpd, &HttpServer::requestReady,
-        &router, &HttpServerRequestRouter::handleRequest);
+    QHttpServer srv;
+    srv.listen(QHostAddress::Any, 8080, [&](QHttpRequest *req, QHttpResponse *res) {
+        QRegularExpressionMatch match = evnavUrl.match(req->url().path());
+        if (match.hasMatch()) {
+            req->onEnd([res, req, handlerPtr]() {
+                handlerPtr->handleRequest(req, res);
+            });
+        } else {
+            res->setStatusCode(qhttp::ESTATUS_NOT_FOUND);
+            res->end();
+        }
+        return;
 
-    httpd.listen(QHostAddress::Any, 8080);
+    });
 
-    return a.exec();
+    if (!srv.isListening()) {
+        fprintf(stderr, "error spawning the server\n");
+        return -1;
+    }
+
+    fprintf(stdout, "server listening\n");
+    return app.exec();
 }
 
