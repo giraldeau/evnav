@@ -14,18 +14,24 @@ EvNav computes a charging plan for long distance travel in electric vehicle.
 Requirements:
  * [Recent libosrm](https://github.com/Project-OSRM/osrm-backend)
  * [Recent Qt](http://www.qt.io/)
- * [Tufao web framework](https://github.com/vinipsmaker/tufao)
+ * [QHttp](https://github.com/azadkuh/qhttp)
 
-Tufao is included under `3rdparty` directory as git submodule. After checkout, use `git submodule --init --recursive` to fetch the dependencies. Build and install Tufao library before compiling EvNav.
+QHttp is included under `3rdparty` directory as git submodule. After checkout, use `git submodule update --init --recursive` to fetch the dependencies. The library will be compiled automatically.
 
 QtCreator is recommended.
  
-Shadow build steps:
+Command line shadow build steps:
 
 ```
-qmake -qt=qt5 <evnav source directory>
+cd evnav/
+mkdir build/
+cd build/
+qmake -qt=qt5 ../evnav.pro PREFIX=/opt
 make
+INSTALL_ROOT=$PWD/sysroot make install
 ```
+
+The `PREFIX` variable defines the install path for library and executables. The default value is `/usr/local`. The `INSTALL_ROOT` is prepended at install time, commonly used for packaging.
 
 # Running
 
@@ -36,7 +42,7 @@ Perform osrm-extract and osrm-prepare on the map, as documented [here](https://g
 The evnav program shows the result directly on the command line. The following shows an example for a trip from Montreal to Quebec city:
 
 ```
-./evnav <path to quebec-latest.osrm> <path to evnav/res/chargers.json> --src=-73.57225,45.53847 --dst=-71.28751,46.79206 --verbose
+evnav <data.osrm> <chargers.json> --src=-73.57225,45.53847 --dst=-71.28751,46.79206 --verbose
 
 chargers loaded: 585
 fast chargers: 26
@@ -97,7 +103,7 @@ There exists a web service backend for the [evnav branch of osrm-frontend](https
 
 ```
 # Start the server
-./evnav-srv <path to quebec-latest.osrm> <path to evnav/res/chargers.json>
+evnav-srv <data.osrm> <chargers.json>
 
 # Make request
 wget -O result.json 'http://localhost:8080/route/v1/evnav/-73.487548828125,45.62172169252446;-71.35894775390625,46.803819640791566?battery=21&SOC_act=1.0&SOC_min=0.1&SOC_max=0.8&efficiency=0.190&power_avg=33.0'
