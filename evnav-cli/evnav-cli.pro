@@ -11,11 +11,10 @@ SOURCES += main.cpp
 
 HEADERS +=
 
-unix {
-    target.path = /usr/bin
-    INSTALLS += target
-}
-
 include(../common.pri)
 include(../libevnav.pri)
 
+unix {
+    target.path = $$PREFIX/bin
+    INSTALLS += target
+}

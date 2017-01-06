@@ -12,6 +12,11 @@ unix {
     CONFIG(debug) {
         QMAKE_RPATHDIR += $${top_builddir}/libevnav/
     }
+
+    isEmpty(PREFIX) {
+        PREFIX = /usr/local
+    }
+
 }
 
 DEFINES += TOPSRCDIR=\\\"\"$${top_srcdir}\"\\\"
