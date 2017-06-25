@@ -1,4 +1,5 @@
 QT += core
+QT += network
 QT -= gui
 
 TARGET = evnav-srv
