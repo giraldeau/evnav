@@ -2,15 +2,8 @@
 #include <QCommandLineParser>
 #include <QUrl>
 #include <QDateTime>
-
-
-#include <Tufao/HttpServer>
-#include <Tufao/HttpServerRequest>
-#include <Tufao/HttpServerRequestRouter>
-#include <Tufao/HttpFileServer>
-#include <Tufao/NotFoundHandler>
-#include <Tufao/Headers>
-
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
 
 #include "evnav.h"
 #include "evnavserver.h"
@@ -20,7 +13,6 @@
 #include <qhttpserverrequest.hpp>
 #include <qhttpserverresponse.hpp>
 
-using namespace Tufao;
 using namespace qhttp::server;
 
 int main(int argc, char *argv[])

@@ -173,7 +173,7 @@ double computeChargingTime(double energy, double power)
 
 double computeSetupTime()
 {
-    return 5 * 60.0; // 5 minutes to s
+    return 15 * 60.0; // 15 minutes to s
 }
 
 double computeTripTimeWithCharging(Trip &trip, double energy, double power)
