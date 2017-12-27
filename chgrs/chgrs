@@ -90,7 +90,12 @@ class AddEnergieAPIv11(BaseAPI):
         if r.status_code != 200:
             print("error: fetch failed {}".format(r.status_code))
             return False
-        self.data = r.json()
+        try:
+            self.data = r.json()
+        except:
+            print("Failed to load json data")
+            print(r.text)
+            return False
         return True
 
 apis = {
