@@ -25,14 +25,9 @@ public:
     int size() { return m_chargers.size(); }
     QList<Charger> chargers() { return m_chargers.values(); }
     Charger charger(VertexId id) { return m_chargers[id]; }
-
-
     ChargerProvider filter(std::function<bool (Charger &)> predicate);
 
-    auto fastChargerFilter() {
-        return [](Charger &c){ return c.level() == 3; };
-    }
-
+    static bool fastChargerFilter(Charger &charger);
 signals:
 
 public slots:

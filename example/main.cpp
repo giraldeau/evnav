@@ -25,8 +25,7 @@ int main(int argc, char *argv[])
     config.storage_config = {argv[1]};
     config.use_shared_memory = false;
 
-    qDebug() << config.storage_config.core_data_path.c_str();
-    qDebug() << config.storage_config.file_index_path.c_str();
+    qDebug() << config.storage_config.base_path.c_str();
     qDebug() << config.storage_config.IsValid();
     qDebug() << config.IsValid();
 

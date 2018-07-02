@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
     ChargerProvider provider;
     provider.loadJson(args.at(1));
 
-    ChargerProvider dcfc = provider.filter(provider.fastChargerFilter());
+    ChargerProvider dcfc = provider.filter(ChargerProvider::fastChargerFilter);
 
     qDebug() << "chargers loaded:" << provider.size();
     qDebug() << "fast chargers:" << dcfc.size();

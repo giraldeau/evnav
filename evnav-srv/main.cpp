@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     qDebug() << "loading chargers...";
     ChargerProvider provider;
     provider.loadJson(args.at(1));
-    ChargerProvider dcfc = provider.filter(provider.fastChargerFilter());
+    ChargerProvider dcfc = provider.filter(ChargerProvider::fastChargerFilter);
     qDebug() << "fast chargers found:" << dcfc.size();
 
     evnav.setChargerProvider(&dcfc);

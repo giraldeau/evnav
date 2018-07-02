@@ -46,3 +46,8 @@ ChargerProvider ChargerProvider::filter(std::function<bool (Charger &)> predicat
     }
     return ChargerProvider(filtered);
 }
+
+bool ChargerProvider::fastChargerFilter(Charger &charger)
+{
+    return charger.level() == 3;
+}

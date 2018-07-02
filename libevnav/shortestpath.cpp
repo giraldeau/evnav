@@ -25,7 +25,7 @@ double ShortestPath::distTo(VertexId dst)
 {
     if (m_distTo.contains(dst))
         return m_distTo[dst];
-    return INFINITY;
+    return Q_INFINITY;
 }
 
 bool ShortestPath::hasPathTo(VertexId dst)
@@ -49,8 +49,8 @@ QList<Edge> ShortestPath::pathTo(VertexId dst)
 
 void ShortestPath::relax(Edge &e)
 {
-    double old_dist = INFINITY;
-    double new_dist = INFINITY;
+    double old_dist = Q_INFINITY;
+    double new_dist = Q_INFINITY;
     VertexId v = e.from();
     VertexId w = e.to();
     if (m_distTo.contains(v))

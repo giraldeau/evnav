@@ -8,6 +8,8 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+using namespace osrm;
+
 Evnav::Evnav(const QString &osrm)
 {
     Q_UNUSED(osrm);

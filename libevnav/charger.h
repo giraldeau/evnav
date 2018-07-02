@@ -8,7 +8,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <osrm/util/coordinate.hpp>
+#include <osrm/coordinate.hpp>
 
 #include "edge.h"
 

@@ -14,8 +14,6 @@
 #include "evnavrequest.h"
 #include "graph.h"
 
-using namespace osrm;
-
 class Trip {
 public:
     int dist_m;
@@ -35,7 +33,7 @@ public:
     void route(EvnavRequest &req, QJsonObject &result);
     void write(QVector<Edge> &path, QJsonObject &json);
 
-    engine::Status computeTrip(const Coordinate &src, const Coordinate &dst, Trip &t);
+    engine::Status computeTrip(const osrm::util::Coordinate &src, const osrm::util::Coordinate &dst, Trip &t);
     void chargerMatrix(std::function<void (Charger &, Charger &, Trip &)> cb);
     void computeDistanceHistogram(QVector<int> &hist, int bin);
 
